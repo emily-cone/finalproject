@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle Eating Circle Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        canvas {
+            background-color: #fafafa;
+            border: 1px solid #000;
+        }
+
+        #gameOver {
+            position: absolute;
+            font-size: 2em;
+            color: red;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="gameOver">Game Over</div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Game variables
+        let player = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 20,
+            speed: 5,
+        };
+        let food = generateFood();
+        let gameOver = false;
+
+        // Movement
+        let dx = 0;
+        let dy = 0;
+
+        // Control the player with arrow keys
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') {
+                dx = 0;
+                dy = -player.speed;
+            } else if (e.key === 'ArrowDown') {
+                dx = 0;
+                dy = player.speed;
+            } else if (e.key === 'ArrowLeft') {
+                dx = -player.speed;
+                dy = 0;
+            } else if (e.key === 'ArrowRight') {
+                dx = player.speed;
+                dy = 0;
+            }
+        });
+
+        // Main game loop
+        function gameLoop() {
+            if (gameOver) return;
+
+            clearCanvas();
+            movePlayer();
+            checkCollisionWithFood();
+            drawPlayer();
+            drawFood();
+        }
+
+        function movePlayer() {
+            player.x += dx;
+            player.y += dy;
+
+            // Prevent the player from moving out of the canvas
+            if (player.x - player.radius < 0) player.x = player.radius;
+            if (player.x + player.radius > canvas.width) player.x = canvas.width - player.radius;
+            if (player.y - player.radius < 0) player.y = player.radius;
+            if (player.y + player.radius > canvas.height) player.y = canvas.height - player.radius;
+        }
+
+        function checkCollisionWithFood() {
+            const dist = Math.sqrt((player.x - food.x) ** 2 + (player.y - food.y) ** 2);
+            if (dist < player.radius + food.radius) {
+                player.radius += 2; // Grow the player when it eats the food
+                food = generateFood(); // Generate new food
+            }
+        }
+
+        function generateFood() {
+            const radius = Math.random() * 10 + 5; // Random radius between 5 and 15
+            const x = Math.random() * (canvas.width - radius * 2) + radius;
+            const y = Math.random() * (canvas.height - radius * 2) + radius;
+            return { x, y, radius };
+        }
+
+        function drawPlayer() {
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'pink';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawFood() {
+            ctx.beginPath();
+            ctx.arc(food.x, food.y, food.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'green';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function endGame() {
+            gameOver = true;
+            document.getElementById('gameOver').style.display = 'block';
+        }
+
+        // Start the game loop
+        setInterval(gameLoop, 1000 / 60); // 60 FPS
+
+    </script>
+
+</body>
+</html>
